@@ -23,6 +23,11 @@ EXTRA_OEMAKE += "${@get_policyconfigarch(d)}"
 
 EXTRA_OEMAKE += "LDFLAGS='${LDFLAGS} -lpcre'"
 
+# workaround gcc errors about:
+# {standard input}: Assembler messages:
+# {standard input}:1910: Error: invalid operands (.text and *UND* sections) for `-'
+CFLAGS += "-O2"
+
 do_compile_append() {
     oe_runmake pywrap -j1 \
             INCLUDEDIR='${STAGING_INCDIR}' \
