@@ -7,7 +7,7 @@ LICENSE = "PD"
 
 inherit lib_package pythonnative
 
-DEPENDS += "libsepol python libpcre swig-native"
+DEPENDS += "libsepol python libpcre swig-native coreutils-native"
 
 PACKAGES += "${PN}-python"
 FILES_${PN}-python = "${libdir}/python${PYTHON_BASEVERSION}/site-packages/selinux/*"

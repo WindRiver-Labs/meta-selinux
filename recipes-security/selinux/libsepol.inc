@@ -8,6 +8,8 @@ LICENSE = "LGPLv2+"
 
 inherit lib_package
 
+DEPENDS += "coreutils-native"
+
 # Change RANLIB for cross compiling, use host-tools $(AR) rather than
 # local ranlib.
 EXTRA_OEMAKE += "RANLIB='$(AR) s'"
