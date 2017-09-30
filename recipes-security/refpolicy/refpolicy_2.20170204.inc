@@ -55,4 +55,10 @@ SRC_URI += " \
             file://ftp-add-ftpd_t-to-mlsfilewrite.patch \
            "
 
+# Backport from upstream
+SRC_URI += " \
+            file://0001-refpolicy-Define-getrlimit-permission-for-class-proc.patch \
+            file://0002-refpolicy-Define-smc_socket-security-class.patch \
+           "
+
 include refpolicy_common.inc
