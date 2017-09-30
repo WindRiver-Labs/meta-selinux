@@ -1,0 +1,74 @@
+From cfe0a94feb3e965663ea20961ac866ac8712b94a Mon Sep 17 00:00:00 2001
+From: Stephen Smalley <sds@tycho.nsa.gov>
+Date: Wed, 17 May 2017 11:31:48 -0400
+Subject: [PATCH 2/2] refpolicy: Define smc_socket security class
+
+Linux kernel commit da69a5306ab9 ("selinux: support distinctions among all
+network address families") triggers a build error if a new address family
+is added without defining a corresponding SELinux security class.  As a
+result, the smc_socket class was added to the kernel to resolve a build
+failure as part of merge commit 3051bf36c25d that introduced AF_SMC circa
+Linux 4.11.  Define this security class and its access vector, note that it
+is enabled as part of the extended_socket_class policy capability, and add
+it to the socket_class_set macro.
+
+Signed-off-by: Stephen Smalley <sds@tycho.nsa.gov>
+
+Upstream-Status: Backport
+---
+ policy/flask/access_vectors      | 3 +++
+ policy/flask/security_classes    | 1 +
+ policy/policy_capabilities       | 1 +
+ policy/support/obj_perm_sets.spt | 2 +-
+ 4 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/policy/flask/access_vectors b/policy/flask/access_vectors
+index 6204e68..7652a31 100644
+--- a/policy/flask/access_vectors
++++ b/policy/flask/access_vectors
+@@ -1059,3 +1059,6 @@ inherits socket
+ 
+ class qipcrtr_socket
+ inherits socket
++
++class smc_socket
++inherits socket
+diff --git a/policy/flask/security_classes b/policy/flask/security_classes
+index 18f18fd..18c4f97 100644
+--- a/policy/flask/security_classes
++++ b/policy/flask/security_classes
+@@ -182,5 +182,6 @@ class nfc_socket
+ class vsock_socket
+ class kcm_socket
+ class qipcrtr_socket
++class smc_socket
+ 
+ # FLASK
+diff --git a/policy/policy_capabilities b/policy/policy_capabilities
+index 39e3930..e0ff6e3 100644
+--- a/policy/policy_capabilities
++++ b/policy/policy_capabilities
+@@ -77,6 +77,7 @@ policycap open_perms;
+ # vsock_socket
+ # kcm_socket
+ # qipcrtr_socket
++# smc_socket
+ #
+ # Available in kernel 4.11+.
+ # Requires libsepol 2.7+ to build policy with this enabled.
+diff --git a/policy/support/obj_perm_sets.spt b/policy/support/obj_perm_sets.spt
+index 590ea63..872ca1d 100644
+--- a/policy/support/obj_perm_sets.spt
++++ b/policy/support/obj_perm_sets.spt
+@@ -34,7 +34,7 @@ define(`devfile_class_set', `{ blk_file chr_file }')
+ #
+ # All socket classes.
+ #
+-define(`socket_class_set', `{ tcp_socket udp_socket rawip_socket netlink_socket packet_socket unix_stream_socket unix_dgram_socket appletalk_socket netlink_route_socket netlink_firewall_socket netlink_tcpdiag_socket netlink_nflog_socket netlink_xfrm_socket netlink_selinux_socket netlink_audit_socket netlink_ip6fw_socket netlink_dnrt_socket netlink_kobject_uevent_socket tun_socket netlink_iscsi_socket netlink_fib_lookup_socket netlink_connector_socket netlink_netfilter_socket netlink_generic_socket netlink_scsitransport_socket netlink_rdma_socket netlink_crypto_socket sctp_socket icmp_socket ax25_socket ipx_socket netrom_socket atmpvc_socket x25_socket rose_socket decnet_socket atmsvc_socket rds_socket irda_socket pppox_socket llc_socket can_socket tipc_socket bluetooth_socket iucv_socket rxrpc_socket isdn_socket phonet_socket ieee802154_socket caif_socket alg_socket nfc_socket vsock_socket kcm_socket qipcrtr_socket}')
++define(`socket_class_set', `{ tcp_socket udp_socket rawip_socket netlink_socket packet_socket unix_stream_socket unix_dgram_socket appletalk_socket netlink_route_socket netlink_firewall_socket netlink_tcpdiag_socket netlink_nflog_socket netlink_xfrm_socket netlink_selinux_socket netlink_audit_socket netlink_ip6fw_socket netlink_dnrt_socket netlink_kobject_uevent_socket tun_socket netlink_iscsi_socket netlink_fib_lookup_socket netlink_connector_socket netlink_netfilter_socket netlink_generic_socket netlink_scsitransport_socket netlink_rdma_socket netlink_crypto_socket sctp_socket icmp_socket ax25_socket ipx_socket netrom_socket atmpvc_socket x25_socket rose_socket decnet_socket atmsvc_socket rds_socket irda_socket pppox_socket llc_socket can_socket tipc_socket bluetooth_socket iucv_socket rxrpc_socket isdn_socket phonet_socket ieee802154_socket caif_socket alg_socket nfc_socket vsock_socket kcm_socket qipcrtr_socket smc_socket }')
+ 
+ #
+ # Datagram socket classes.
+-- 
+2.7.4
+
