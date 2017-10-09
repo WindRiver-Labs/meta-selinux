@@ -17,12 +17,12 @@ Signed-off-by: Joe MacDonald <joe_macdonald@mentor.com>
  policy/modules/system/locallogin.te |  4 +++-
  2 files changed, 11 insertions(+), 7 deletions(-)
 
+diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
+index 6503fff..be291a9 100644
 --- a/policy/modules/system/init.te
 +++ b/policy/modules/system/init.te
-@@ -344,17 +344,19 @@ ifdef(`init_systemd',`
- 
- 	optional_policy(`
- 		modutils_domtrans(init_t)
+@@ -302,12 +302,14 @@ ifdef(`init_systemd',`
+ 		modutils_domtrans_insmod(init_t)
  	')
  ',`
 -	tunable_policy(`init_upstart',`
@@ -30,27 +30,23 @@ Signed-off-by: Joe MacDonald <joe_macdonald@mentor.com>
 -	',`
 -		# Run the shell in the sysadm role for single-user mode.
 -		# causes problems with upstart
--		ifndef(`distro_debian',`
--			sysadm_shell_domtrans(init_t)
+-		sysadm_shell_domtrans(init_t)
 +	optional_policy(`
 +		tunable_policy(`init_upstart',`
 +			corecmd_shell_domtrans(init_t, initrc_t)
 +		',`
 +			# Run the shell in the sysadm role for single-user mode.
 +			# causes problems with upstart
-+			ifndef(`distro_debian',`
-+				sysadm_shell_domtrans(init_t)
-+			')
- 		')
++			sysadm_shell_domtrans(init_t)
++		')
  	')
  ')
  
- ifdef(`distro_debian',`
+diff --git a/policy/modules/system/locallogin.te b/policy/modules/system/locallogin.te
+index 8386084..5242713 100644
 --- a/policy/modules/system/locallogin.te
 +++ b/policy/modules/system/locallogin.te
-@@ -260,11 +260,13 @@ seutil_read_default_contexts(sulogin_t)
- userdom_use_unpriv_users_fds(sulogin_t)
- 
+@@ -246,7 +246,9 @@ userdom_use_unpriv_users_fds(sulogin_t)
  userdom_search_user_home_dirs(sulogin_t)
  userdom_use_user_ptys(sulogin_t)
  
@@ -59,7 +55,8 @@ Signed-off-by: Joe MacDonald <joe_macdonald@mentor.com>
 +	sysadm_shell_domtrans(sulogin_t)
 +')
  
- # by default, sulogin does not use pam...
- # sulogin_pam might need to be defined otherwise
- ifdef(`sulogin_pam', `
- 	selinux_get_fs_mount(sulogin_t)
+ # suse and debian do not use pam with sulogin...
+ ifdef(`distro_suse', `define(`sulogin_no_pam')')
+-- 
+2.13.0
+
