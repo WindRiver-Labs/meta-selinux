@@ -13,13 +13,15 @@ Signed-off-by: Xin Ouyang <Xin.Ouyang@windriver.com>
 Signed-off-by: Joe MacDonald <joe_macdonald@mentor.com>
 Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
 ---
- config/appconfig-mcs/seusers        |  4 ++--
+ config/appconfig-mcs/seusers        |  5 ++--
  policy/modules/roles/sysadm.te      |  1 +
- policy/modules/system/init.if       | 47 ++++++++++++++++++++++++++++++-------
+ policy/modules/system/init.if       | 46 ++++++++++++++++++++++++++++++-------
  policy/modules/system/unconfined.te |  7 ++++++
  policy/users                        | 16 +++++--------
  5 files changed, 55 insertions(+), 20 deletions(-)
 
+diff --git a/config/appconfig-mcs/seusers b/config/appconfig-mcs/seusers
+index ce614b4..d707475 100644
 --- a/config/appconfig-mcs/seusers
 +++ b/config/appconfig-mcs/seusers
 @@ -1,2 +1,3 @@
@@ -28,25 +30,58 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
 +root:unconfined_u:s0-mcs_systemhigh
 +__default__:unconfined_u:s0
 +
+diff --git a/policy/modules/roles/sysadm.te b/policy/modules/roles/sysadm.te
+index 46fbe81..6a6468f 100644
 --- a/policy/modules/roles/sysadm.te
 +++ b/policy/modules/roles/sysadm.te
-@@ -37,10 +37,11 @@ ubac_process_exempt(sysadm_t)
- ubac_file_exempt(sysadm_t)
- ubac_fd_exempt(sysadm_t)
- 
- init_exec(sysadm_t)
- init_admin(sysadm_t)
+@@ -43,6 +43,7 @@ init_shutdown_system(sysadm_t)
+ init_start_generic_units(sysadm_t)
+ init_stop_generic_units(sysadm_t)
+ init_reload_generic_units(sysadm_t)
 +init_script_role_transition(sysadm_r)
- 
- selinux_read_policy(sysadm_t)
  
  # Add/remove user home directories
  userdom_manage_user_home_dirs(sysadm_t)
+diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
+index 0cb296f..6e26881 100644
 --- a/policy/modules/system/init.if
 +++ b/policy/modules/system/init.if
-@@ -1394,30 +1394,31 @@ interface(`init_script_file_entry_type',
- ##	</summary>
- ## </param>
+@@ -44,6 +44,34 @@ interface(`init_script_file',`
+ 
+ ########################################
+ ## <summary>
++##     Transition to system_r when execute an init script
++## </summary>
++## <desc>
++##     <p>
++##     Execute a init script in a specified role
++##     </p>
++##     <p>
++##     No interprocess communication (signals, pipes,
++##     etc.) is provided by this interface since
++##     the domains are not owned by this module.
++##     </p>
++## </desc>
++## <param name="source_role">
++##     <summary>
++##     Role to transition from.
++##     </summary>
++## </param>
++#
++interface(`init_script_role_transition',`
++	gen_require(`
++		attribute init_script_file_type;
++	')
++
++	role_transition $1 init_script_file_type system_r;
++')
++
++########################################
++## <summary>
+ ##   Make the specified type usable for
+ ##   systemd unit files.
+ ## </summary>
+@@ -1234,11 +1262,12 @@ interface(`init_script_file_entry_type',`
  #
  interface(`init_spec_domtrans_script',`
  	gen_require(`
@@ -61,10 +96,7 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  
  	ifdef(`distro_gentoo',`
  		gen_require(`
- 			type rc_exec_t;
- 		')
- 
- 		domtrans_pattern($1, rc_exec_t, initrc_t)
+@@ -1249,11 +1278,11 @@ interface(`init_spec_domtrans_script',`
  	')
  
  	ifdef(`enable_mcs',`
@@ -78,11 +110,7 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  	')
  ')
  
- ########################################
- ## <summary>
-@@ -1429,22 +1430,23 @@ interface(`init_spec_domtrans_script',`
- ##	</summary>
- ## </param>
+@@ -1269,18 +1298,19 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -106,48 +134,11 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  	')
  ')
  
- ########################################
- ## <summary>
-@@ -2972,5 +2974,34 @@ interface(`init_admin',`
- 	init_stop_all_units($1)
- 	init_stop_generic_units($1)
- 	init_stop_system($1)
- 	init_telinit($1)
- ')
-+
-+########################################
-+## <summary>
-+##	Transition to system_r when execute an init script
-+## </summary>
-+## <desc>
-+##	<p>
-+##	Execute a init script in a specified role
-+##	</p>
-+##	<p>
-+##	No interprocess communication (signals, pipes,
-+##	etc.) is provided by this interface since
-+##	the domains are not owned by this module.
-+##	</p>
-+## </desc>
-+## <param name="source_role">
-+##	<summary>
-+##	Role to transition from.
-+##	</summary>
-+## </param>
-+#
-+interface(`init_script_role_transition',`
-+	gen_require(`
-+		attribute init_script_file_type;
-+	')
-+
-+	role_transition $1 init_script_file_type system_r;
-+')
-+
+diff --git a/policy/modules/system/unconfined.te b/policy/modules/system/unconfined.te
+index 189869d..5688bbb 100644
 --- a/policy/modules/system/unconfined.te
 +++ b/policy/modules/system/unconfined.te
-@@ -18,10 +18,15 @@ init_system_domain(unconfined_t, unconfi
- 
- type unconfined_execmem_t;
+@@ -20,6 +20,11 @@ type unconfined_execmem_t;
  type unconfined_execmem_exec_t;
  init_system_domain(unconfined_execmem_t, unconfined_execmem_exec_t)
  role unconfined_r types unconfined_execmem_t;
@@ -159,11 +150,7 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  
  ########################################
  #
- # Local policy
- #
-@@ -48,10 +53,12 @@ unconfined_domain(unconfined_t)
- userdom_user_home_dir_filetrans_user_home_content(unconfined_t, { dir file lnk_file fifo_file sock_file })
- 
+@@ -50,6 +55,8 @@ userdom_user_home_dir_filetrans_user_home_content(unconfined_t, { dir file lnk_f
  ifdef(`direct_sysadm_daemon',`
          optional_policy(`
                  init_run_daemon(unconfined_t, unconfined_r)
@@ -172,13 +159,11 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
          ')
  ',`
          ifdef(`distro_gentoo',`
-                 seutil_run_runinit(unconfined_t, unconfined_r)
-                 seutil_init_script_run_runinit(unconfined_t, unconfined_r)
+diff --git a/policy/users b/policy/users
+index ca20375..ac1ca6c 100644
 --- a/policy/users
 +++ b/policy/users
-@@ -13,37 +13,33 @@
- # system_u is the user identity for system processes and objects.
- # There should be no corresponding Unix user identity for system,
+@@ -15,7 +15,7 @@
  # and a user process should never be assigned the system user
  # identity.
  #
@@ -187,9 +172,7 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  
  #
  # user_u is a generic user identity for Linux users who have no
- # SELinux user identity defined.  The modified daemons will use
- # this user identity in the security context if there is no matching
- # SELinux user identity for a Linux user.  If you do not want to
+@@ -25,14 +25,14 @@ gen_user(system_u,, system_r, s0, s0 - mls_systemhigh, mcs_allcats)
  # permit any access to such users, then remove this entry.
  #
  gen_user(user_u, user, user_r, s0, s0)
@@ -208,9 +191,7 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
  ')
  
  #
- # The following users correspond to Unix identities.
- # These identities are typically assigned as the user attribute
- # when login starts the user shell.  Users with access to the sysadm_r
+@@ -42,8 +42,4 @@ ifdef(`direct_sysadm_daemon',`
  # role should use the staff_r role instead of the user_r role when
  # not in the sysadm_r.
  #
@@ -220,3 +201,6 @@ Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
 -	gen_user(root, sysadm, sysadm_r staff_r ifdef(`enable_mls',`secadm_r auditadm_r'), s0, s0 - mls_systemhigh, mcs_allcats)
 -')
 +gen_user(root, user, sysadm_r staff_r ifdef(`enable_mls',`secadm_r auditadm_r') unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
+-- 
+2.13.0
+
