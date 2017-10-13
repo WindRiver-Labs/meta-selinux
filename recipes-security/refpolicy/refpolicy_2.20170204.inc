@@ -53,6 +53,8 @@ SRC_URI += " \
             file://poky-policy-fix-setfiles-statvfs-get-file-count.patch \
             file://poky-policy-fix-dmesg-to-use-dev-kmsg.patch \
             file://ftp-add-ftpd_t-to-mlsfilewrite.patch \
+            file://poky-policy-kernel_t-mls-trusted-for-lowering-file-l.patch \
+            file://poky-policy-kernel_t-mls-trusted-for-setting-process.patch \
            "
 
 # Backport from upstream
