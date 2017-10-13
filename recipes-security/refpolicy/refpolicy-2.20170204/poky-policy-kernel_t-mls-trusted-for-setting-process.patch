@@ -1,0 +1,43 @@
+From 5a47be14ff03ae0d959908ad39b429787670d40e Mon Sep 17 00:00:00 2001
+From: Wenzong Fan <wenzong.fan@windriver.com>
+Date: Fri, 13 Oct 2017 08:16:18 +0000
+Subject: [PATCH] poky-policy: kernel_t mls trusted for setting process level
+
+Because of selinux-init.service always checks the label of init
+process to determine if the system needs to be re-labeled and re-
+booted, a failed transition will cause the target falls into loop
+of re-label & re-boot.
+
+Make kernel_t MLS trusted for setting the level of processes it
+executes to fix below avc denial and remove the error:
+
+  avc: denied { dyntransition } for  pid=1 comm="systemd" \
+  scontext=system_u:system_r:kernel_t:s15:c0.c1023 \
+  tcontext=system_u:system_r:init_t:s0-s15:c0.c1023 \
+  tclass=process permissive=0
+
+  systemd[1]: Failed to transition into init label \
+  'system_u:system_r:init_t:s0-s15:c0.c1023', ignoring.
+
+Upstream-Status: Pending
+
+Signed-off-by: Wenzong Fan <wenzong.fan@windriver.com>
+---
+ policy/modules/kernel/kernel.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/kernel/kernel.te b/policy/modules/kernel/kernel.te
+index 363381c..8105b91 100644
+--- a/policy/modules/kernel/kernel.te
++++ b/policy/modules/kernel/kernel.te
+@@ -328,6 +328,7 @@ mls_file_write_all_levels(kernel_t)
+ mls_file_read_all_levels(kernel_t)
+ mls_socket_write_all_levels(kernel_t)
+ mls_fd_use_all_levels(kernel_t)
++mls_process_set_level(kernel_t)
+ # https://bugzilla.redhat.com/show_bug.cgi?id=667370
+ mls_file_downgrade(kernel_t)
+ 
+-- 
+2.13.3
+
