@@ -7,15 +7,14 @@ SECTION = "devel/python"
 HOMEPAGE = "https://github.com/haypo/python-ipy"
 DEPENDS = "python"
 LICENSE = "BSD"
-LIC_FILES_CHKSUM = "file://COPYING;md5=848d24919845901b4f48bae5f13252e6"
+LIC_FILES_CHKSUM = "file://COPYING;md5=ebc0028ff5cdaf7796604875027dcd55"
 
-SRCREV = "463b2be0646c7fb48f826f973aac216632f44e14"
-PV = "0.83+git${SRCPV}"
-SRC_URI = "git://github.com/autocracy/python-ipy.git;branch=master \
-"
+SRC_URI = "http://pypi.python.org/packages/source/I/IPy/IPy-${PV}.tar.gz"
 
-S = "${WORKDIR}/git"
-B = "${S}"
+SRC_URI[md5sum] = "7b8c6eb4111b15aea31b67108e769712"
+SRC_URI[sha256sum] = "61da5a532b159b387176f6eabf11946e7458b6df8fb8b91ff1d345ca7a6edab8"
+
+S = "${WORKDIR}/IPy-${PV}"
 
 inherit distutils
 
@@ -29,5 +28,5 @@ BBCLASSEXTEND = "native"
 
 do_install_append() {
 	install -d ${D}/${datadir}/doc/${BPN}-${PV}
-	install AUTHORS COPYING ChangeLog README.rst ${D}/${datadir}/doc/${BPN}-${PV}
+	install AUTHORS COPYING ChangeLog README ${D}/${datadir}/doc/${BPN}-${PV}
 }
