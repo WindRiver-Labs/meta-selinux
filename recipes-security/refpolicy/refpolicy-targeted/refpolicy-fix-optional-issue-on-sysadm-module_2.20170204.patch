@@ -44,15 +44,6 @@ Signed-off-by: Joe MacDonald <joe_macdonald@mentor.com>
  
  ifdef(`distro_debian',`
  	fs_tmpfs_filetrans(init_t, initctl_t, fifo_file, "initctl")
-@@ -1109,6 +1111,6 @@ optional_policy(`
- ')
- 
- # systemd related allow rules
- allow kernel_t init_t:process dyntransition;
- allow devpts_t device_t:filesystem associate;
--allow init_t self:capability2 block_suspend;
-\ No newline at end of file
-+allow init_t self:capability2 block_suspend;
 --- a/policy/modules/system/locallogin.te
 +++ b/policy/modules/system/locallogin.te
 @@ -244,11 +244,13 @@ seutil_read_default_contexts(sulogin_t)
