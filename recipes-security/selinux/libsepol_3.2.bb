@@ -11,6 +11,11 @@ require selinux_common.inc
 
 inherit lib_package
 
+SRC_URI += "file://CVE-2021-36084.patch;striplevel=2 \
+            file://CVE-2021-36085.patch;striplevel=2 \
+            file://CVE-2021-36086.patch;striplevel=2 \
+           "
+
 S = "${WORKDIR}/git/libsepol"
 
 # Change RANLIB for cross compiling, use host-tools $(AR) rather than
