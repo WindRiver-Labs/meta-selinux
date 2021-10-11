@@ -12,6 +12,7 @@ require selinux_common.inc
 
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'pam', '${PAM_SRC_URI}', '', d)} \
             file://policycoreutils-fixfiles-de-bashify.patch \
+            file://0001-policycoreutils-setfiles-do-not-create-useless-setfi.patch \
            "
 
 PAM_SRC_URI = "file://pam.d/newrole \

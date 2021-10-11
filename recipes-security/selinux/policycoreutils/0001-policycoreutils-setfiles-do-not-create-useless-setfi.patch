@@ -1,0 +1,72 @@
+From 68f5b73026193e20eb9453d769bb7b9532f87b55 Mon Sep 17 00:00:00 2001
+From: Ondrej Mosnacek <omosnace@redhat.com>
+Date: Fri, 19 Mar 2021 22:30:59 +0100
+Subject: [PATCH] policycoreutils/setfiles: do not create useless
+ setfiles.8.man file
+
+Seems to have been there to allow for some sed substitution over the
+text. Now that this is gone, the redundant intermediate file can be
+removed, too.
+
+Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
+
+Upstream-Status: Backport
+[https://github.com/SELinuxProject/selinux/commit/6cfebe787e258c4c62dbf2018d0a08bc8b70e445]
+
+Signed-off-by: Yi Zhao <yi.zhao@windriver.com>
+---
+ setfiles/.gitignore | 1 -
+ setfiles/Makefile   | 9 +++------
+ 2 files changed, 3 insertions(+), 7 deletions(-)
+ delete mode 100644 setfiles/.gitignore
+
+diff --git a/setfiles/.gitignore b/setfiles/.gitignore
+deleted file mode 100644
+index 5e899c9..0000000
+--- a/setfiles/.gitignore
++++ /dev/null
+@@ -1 +0,0 @@
+-setfiles.8.man
+diff --git a/setfiles/Makefile b/setfiles/Makefile
+index a3bbbe1..63d8185 100644
+--- a/setfiles/Makefile
++++ b/setfiles/Makefile
+@@ -13,7 +13,7 @@ ifeq ($(AUDITH), y)
+ 	override LDLIBS += -laudit
+ endif
+ 
+-all: setfiles restorecon restorecon_xattr man
++all: setfiles restorecon restorecon_xattr
+ 
+ setfiles: setfiles.o restore.o
+ 
+@@ -22,16 +22,13 @@ restorecon: setfiles
+ 
+ restorecon_xattr: restorecon_xattr.o restore.o
+ 
+-man:
+-	@cp -af setfiles.8 setfiles.8.man
+-
+ install: all
+ 	[ -d $(DESTDIR)$(MANDIR)/man8 ] || mkdir -p $(DESTDIR)$(MANDIR)/man8
+ 	-mkdir -p $(DESTDIR)$(SBINDIR)
+ 	install -m 755 setfiles $(DESTDIR)$(SBINDIR)
+ 	(cd $(DESTDIR)$(SBINDIR) && ln -sf setfiles restorecon)
+ 	install -m 755 restorecon_xattr $(DESTDIR)$(SBINDIR)
+-	install -m 644 setfiles.8.man $(DESTDIR)$(MANDIR)/man8/setfiles.8
++	install -m 644 setfiles.8 $(DESTDIR)$(MANDIR)/man8/setfiles.8
+ 	install -m 644 restorecon.8 $(DESTDIR)$(MANDIR)/man8/restorecon.8
+ 	install -m 644 restorecon_xattr.8 $(DESTDIR)$(MANDIR)/man8/restorecon_xattr.8
+ 	for lang in $(LINGUAS) ; do \
+@@ -42,7 +39,7 @@ install: all
+ 	done
+ 
+ clean:
+-	rm -f setfiles restorecon restorecon_xattr *.o setfiles.8.man
++	rm -f setfiles restorecon restorecon_xattr *.o
+ 
+ indent:
+ 	../../scripts/Lindent $(wildcard *.[ch])
+-- 
+2.17.1
+
