@@ -50,6 +50,7 @@ RDEPENDS_${BPN}-semanage += "\
         python3-xml \
         python3-misc \
         libselinux-python \
+        audit-python \
         ${BPN} \
 "
 RDEPENDS_${BPN}-sepolicy += "\
